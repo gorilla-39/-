@@ -43,7 +43,3 @@ function rollDice() {
   updateMetrics();
   document.getElementById("dice-result").innerHTML = result;
 }
-
-document.addEventListener('DOMContentLoaded', function() {
-  document.getElementById("login-area").style.display = "block"; // 初期表示でログイン画面
-});
