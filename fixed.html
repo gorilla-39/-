@@ -101,8 +101,8 @@
             request.onerror = () => reject("Get error");
         });
     }
-    
-    
+
+    //currentUserをguest（匿名）にしといて、
     let currentUser = 'guest';
     let users = JSON.parse(getItem("users") || "{}");
     
@@ -190,6 +190,10 @@
         document.getElementById("dice-result").textContent = ""; // 出目のリセット
       }
     }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById("login-area").style.display = "block"; // 初期表示でログイン画面
+    });
   </script>
   <script src="/-/scripts/tintiro.js"></script>
 </body>
