@@ -230,8 +230,7 @@
       if (!loadedScriptGames.includes(GameName)) {
         loadedScriptGames.push(GameName);
         let GameScript = document.createElement("script");
-        //GameScript.src = `/-/scripts/${GameName}.js`;
-        GameScript.src = `/scripts/${GameName}.js`;
+        GameScript.src = `/-/scripts/${GameName}.js`;
         document.body.appendChild(GameScript);
       }
     }
