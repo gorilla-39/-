@@ -95,7 +95,7 @@
         <div id="blackjack-area" class="hidden">
             <input id="blackjack-bet" class="inputs" type="number" placeholder="掛け金 (Gleam)">
             <div style="text-align: center">
-                <button class="half_buttons" onclick="drawCard()">一枚引く</button>
+                <button id="start-draw-button" class="half_buttons" onclick="drawCard()">開始</button>
                 <button class="half_buttons" onclick="check()">決定</button>
             </div>
             <div id="blackjack-result"></div>
@@ -228,7 +228,8 @@
       if (!loadedScriptGames.includes(GameName)) {
         loadedScriptGames.push(GameName);
         let GameScript = document.createElement("script");
-        GameScript.src = `/-/scripts/${GameName}.js`;
+        //GameScript.src = `/-/scripts/${GameName}.js`;
+        GameScript.src = `/scripts/${GameName}.js`;
         document.body.appendChild(GameScript);
       }
     }

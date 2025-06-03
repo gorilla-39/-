@@ -1,19 +1,17 @@
 //  this code is running tintiro in one display modal.
 let p1_value = 0; let p2_value=0;
 let betAmount
+const start_draw_button = document.getElementById("start-draw-button");
 
 function drawCard() {
   user = users[currentUser];
-  const start_draw_button = document.getElementById("start-draw-button")
   if (start_draw_button.textContent == "開始") {
-    start_draw_button.innerHTML = "一枚引く";
     const betInput = document.getElementById("blackjack-bet").value.trim();
     betAmount = parseInt(betInput, 10);
+    if (betInput === "" || isNaN(betAmount)) {alert("賭け金を入力してください");return;}
+    if (betAmount <= 0 || betAmount > user.gleam) {alert("有効な賭け金を入力してください");return;}
+    start_draw_button.innerHTML = "一枚引く";
   }
-
-  if (betInput === "" || isNaN(betAmount)) {alert("賭け金を入力してください");return;}
-  if (betAmount <= 0 || betAmount > user.gleam) {alert("有効な賭け金を入力してください");return;}
-
 
   cardNum = Math.floor(Math.random()*13) +1;
   if (p1_value + cardNum >= 22) {
@@ -62,4 +60,5 @@ function check() {
   updateMetrics();
   const win_player = (winner==0 ? "引き分け" : (winner==1 ? "負け" : "勝ち"));
   document.getElementById("blackjack-result").innerHTML = win_player;
+  start_draw_button.innerHTML = "開始";
 }
