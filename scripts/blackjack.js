@@ -3,9 +3,13 @@ let p1_value = 0; let p2_value=0;
 let betAmount
 
 function drawCard() {
-  const betInput = document.getElementById("blackjack-bet").value.trim();
-  betAmount = parseInt(betInput, 10);
   user = users[currentUser];
+  const start_draw_button = document.getElementById("start-draw-button")
+  if (start_draw_button.textContent == "開始") {
+    start_draw_button.innerHTML = "一枚引く";
+    const betInput = document.getElementById("blackjack-bet").value.trim();
+    betAmount = parseInt(betInput, 10);
+  }
 
   if (betInput === "" || isNaN(betAmount)) {alert("賭け金を入力してください");return;}
   if (betAmount <= 0 || betAmount > user.gleam) {alert("有効な賭け金を入力してください");return;}
