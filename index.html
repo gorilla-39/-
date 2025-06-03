@@ -178,19 +178,19 @@
       let payout = 0;
 
       if (dice[0] === dice[1] && dice[1] === dice[2]) {
-        payout = dice[0] === 1 ? bet * 5 : bet * 3; // ピンゾロ5倍、ゾロ目3倍
+        payout = dice[0] === 1 ? bet * 6 : bet * 4; // ピンゾロ5倍、ゾロ目3倍
         result += dice[0] === 1 ? "ピンゾロ！5倍！" : "ゾロ目！3倍！";
       } else if (sorted.join() === "1,2,3") {
-        payout = -bet * 2; // ヒフミ-2倍
+        payout = -bet; // ヒフミ-2倍
         result += "ヒフミ！マイナス2倍！";
       } else if (sorted.join() === "4,5,6") {
-        payout = bet * 2; // シゴロ2倍
+        payout = bet * 3; // シゴロ2倍
         result += "シゴロ！2倍！";
       } else if (new Set(dice).size === 2) {
-        payout = 0; // ワンペア等倍
+        payout = bet*2; // ワンペア等倍
         result += "ワンペア！1倍！";
       } else {
-        payout = -bet; // 目無し-1倍
+        payout = 0; // 目無し0倍
         result += "ノミ（バラバラ）！マイナス1倍！";
       }
 
