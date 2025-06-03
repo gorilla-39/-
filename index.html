@@ -187,7 +187,7 @@
         payout = bet * 2; // シゴロ2倍
         result += "シゴロ！2倍！";
       } else if (new Set(dice).size === 2) {
-        payout = bet; // ワンペア等倍
+        payout = 0; // ワンペア等倍
         result += "ワンペア！1倍！";
       } else {
         payout = -bet; // 目無し-1倍
