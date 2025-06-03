@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>Gleam Games v1</title>
+  <title>Gleam Games v2</title>
   <style>
     body { 
       font-family: Arial; 
@@ -36,7 +36,7 @@
   </style>r
 </head>
 <body>
-  <h1>Gleam チンチロリン</h1>
+  <h1>Gleam Games</h1>
 
   <!-- ログイン画面 -->
   <div id="login-area">
@@ -59,13 +59,23 @@
     <button onclick="repay()">返済する</button>
 
     <h3>🎲 チンチロリン</h3>
-    <button id="start-game-btn" onclick="toggleGame()">チンチロリンで遊ぶ</button>
-    <div id="game-area" class="hidden">
+    <button id="tintiro-btn" onclick="toggleGame('tintiro')">チンチロリンで遊ぶ</button>
+    <div id="tintiro-area" class="hidden">
       <input id="bet" type="number" placeholder="掛け金 (Gleam)">
       <button onclick="rollDice()">サイコロを振る</button>
       <div id="dice-result"></div>
-      <button onclick="toggleGame()">終了</button>
+      <button onclick="toggleGame('tintiro')">終了</button>
     </div>
+
+    <h3>🃏 ブラックジャック</h3>
+    <button id="blackjack-btn" onclick="toggleGame('blackjack')">ブラックジャックで遊ぶ</button>
+    <div id="blackjack-area" class="hidden">
+      <input id="bet" type="number" placeholder="掛け金 (Gleam)">
+      <button onclick="rollDice()">もう一枚引く</button>
+      <div id="cards-result"></div>
+      <button onclick="toggleGame('blackjack')">終了</button>
+    </div>
+
   </div>
   <script>
     //===== set indexedDB functions (like LocalStorage) ====
@@ -176,18 +186,22 @@
       }
     }
     
-    function toggleGame() {
-      const gameArea = document.getElementById("game-area");
-      const startGameBtn = document.getElementById("start-game-btn");
-      
+    let loadedScriptGames = [];
+    function toggleGame(GameName) {
+      //this is based on what game area have same name elements.
+      //such as btn: GameName + "btn". area: GameName + "area". script path: "/-/scripts/" + GameName + ".js"
+      const gameArea = document.getElementById(`${GameName}-btn`);
+      const startGameBtn = document.getElementById(`${GameName}-area`);
+
       // ゲームエリアが表示されていなければ表示、表示されていれば非表示
       gameArea.classList.toggle("hidden");
       startGameBtn.style.display = gameArea.classList.contains("hidden") ? "block" : "none";
-    
-      // サイコロを振るボタンもゲームエリア内で非表示に
-      if (gameArea.classList.contains("hidden")) {
-        document.getElementById("bet").value = ""; // ベット額リセット
-        document.getElementById("dice-result").textContent = ""; // 出目のリセット
+      
+      if (!loadedScriptGames.include(gameScriptSrc)) {
+        loadedScriptGames.push(GameName);
+        let GameScript = document.createElement("script");
+        GameScript.src = `/-/scripts/${GameName}.js`;
+        document.body.appendChild(GameScript);
       }
     }
 
