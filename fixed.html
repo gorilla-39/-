@@ -4,33 +4,51 @@
   <meta charset="UTF-8">
   <title>Gleam Games v2</title>
   <style>
-    body { 
-      font-family: Arial; 
-      padding: 20px; 
-      max-width: 700px; 
-      margin: auto; 
+    body {
+      font-family: Arial;
+      padding: 20px;
+      max-width: 700px;
+      margin: auto;
       background-color: #111;
       color: white;
     }
-    h1, h2, h3 { 
+    h1, h2, h3 {
       color: #FFFFFF;
     }
     h2 { margin-top: 30px; }
     .hidden { display: none; }
-    input, button { 
-      padding: 6px; 
-      margin: 5px 0; 
-      width: 100%; 
-      background-color: #222; 
+    .inputs {
+      padding: 6px 0 6px 0;
+      margin: 5px 0;
+      width: 100%;
+      background-color: #222;
       border: 1px solid #444;
       color: white;
     }
+    .buttons {
+      padding: 6px;
+      margin: 5px 0;
+      width: 100%;
+      background-color: #222;
+      border: 1px solid #444;
+      color: white;
+    }
+    .half_buttons {
+      padding: 6px;
+      margin: 5px 0;
+      width: 49.4%;
+      background-color: #222;
+      border: 1px solid #444;
+      color: white;
+      display: inline-block;
+    }
     button:hover { background-color: #333; }
     .metrics { margin: 10px 0; font-weight: bold; }
-    #game-area {
+    .game-area {
       background-color: #333;
       padding: 20px;
       border-radius: 8px;
+      margin: 20px 0 20px 0;
     }
     #dice-result { color: #FFD700; }
   </style>
@@ -41,10 +59,10 @@
   <!-- ログイン画面 -->
   <div id="login-area">
     <h2>ログイン</h2>
-    <input id="username" placeholder="ユーザー名">
-    <input id="password" type="password" placeholder="パスワード">
-    <button onclick="login()">ログイン</button>
-    <button onclick="register()">新規登録</button>
+    <input id="username" class="inputs" placeholder="ユーザー名">
+    <input id="password" class="inputs" type="password" placeholder="パスワード">
+    <button class="buttons" onclick="login()">ログイン</button>
+    <button class="buttons" onclick="register()">新規登録</button>
   </div>
 
   <!-- メインエリア -->
@@ -54,26 +72,35 @@
     <div class="metrics">借金: <span id="debt">0</span></div>
 
     <h3>💼 取引所</h3>
-    <input id="amount" type="number" placeholder="金額を入力">
-    <button onclick="borrow()">借りる</button>
-    <button onclick="repay()">返済する</button>
-
-    <h3>🎲 チンチロリン</h3>
-    <button id="tintiro-btn" onclick="toggleGame('tintiro')">チンチロリンで遊ぶ</button>
-    <div id="tintiro-area" class="hidden">
-      <input id="bet" type="number" placeholder="掛け金 (Gleam)">
-      <button onclick="rollDice()">サイコロを振る</button>
-      <div id="dice-result"></div>
-      <button onclick="toggleGame('tintiro')">終了</button>
+    <input id="amount" class="inputs" type="number" placeholder="金額を入力">
+    <div style="text-align: center">
+        <button class="half_buttons" onclick="borrow()">借りる</button>
+        <button class="half_buttons" onclick="repay()">返済する</button>
     </div>
 
-    <h3>🃏 ブラックジャック</h3>
-    <button id="blackjack-btn" onclick="toggleGame('blackjack')">ブラックジャックで遊ぶ</button>
-    <div id="blackjack-area" class="hidden">
-      <input id="bet" type="number" placeholder="掛け金 (Gleam)">
-      <button onclick="rollDice()">もう一枚引く</button>
-      <div id="cards-result"></div>
-      <button onclick="toggleGame('blackjack')">終了</button>
+    <div class="game-area">
+        <h3>🎲 チンチロリン</h3>
+        <button id="tintiro-btn" class="buttons" onclick="toggleGame('tintiro')">チンチロリンで遊ぶ</button>
+        <div id="tintiro-area" class="hidden" >
+            <input id="tintiro-bet" class="inputs" type="number" placeholder="掛け金 (Gleam)">
+            <button class="buttons" onclick="rollDice()">サイコロを振る</button>
+            <div id="tintiro-result"></div>
+            <button class="buttons" onclick="toggleGame('tintiro')">終了</button>
+        </div>
+    </div>
+
+    <div class="game-area">
+        <h3>🃏 ブラックジャック</h3>
+        <button id="blackjack-btn" class="buttons" onclick="toggleGame('blackjack')">ブラックジャックで遊ぶ</button>
+        <div id="blackjack-area" class="hidden">
+            <input id="blackjack-bet" class="inputs" type="number" placeholder="掛け金 (Gleam)">
+            <div style="text-align: center">
+                <button class="half_buttons" onclick="drawCard()">一枚引く</button>
+                <button class="half_buttons" onclick="check()">決定</button>
+            </div>
+            <div id="blackjack-result"></div>
+            <button class="buttons" onclick="toggleGame('blackjack')">終了</button>
+        </div>
     </div>
 
   </div>
@@ -115,6 +142,7 @@
     //currentUserをguest（匿名）にしといて、
     let currentUser = 'guest';
     let users = getItem("users").then(content => JSON.parse(content || "{}"));
+    let user;
     
     // 初回のみ5000 Gleamを設定
     if (!users['guest']) {
@@ -197,10 +225,11 @@
       gameArea.classList.toggle("hidden");
       startGameBtn.style.display = gameArea.classList.contains("hidden") ? "block" : "none";
       
-      if (!loadedScriptGames.include(gameScriptSrc)) {
+      if (!loadedScriptGames.includes(GameName)) {
         loadedScriptGames.push(GameName);
         let GameScript = document.createElement("script");
-        GameScript.src = `/-/scripts/${GameName}.js`;
+        //GameScript.src = `/-/scripts/${GameName}.js`;
+        GameScript.src = `/scripts/${GameName}.js`;
         document.body.appendChild(GameScript);
       }
     }
@@ -209,6 +238,5 @@
       document.getElementById("login-area").style.display = "block"; // 初期表示でログイン画面
     });
   </script>
-  <script src="/-/scripts/tintiro.js"></script>
 </body>
 </html>

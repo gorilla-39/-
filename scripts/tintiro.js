@@ -1,8 +1,8 @@
 //  this code is running tintiro in one display modal.
 function rollDice() {
-  const betInput = document.getElementById("bet").value.trim();
+  user = users[currentUser];
+  const betInput = document.getElementById("tintiro-bet").value.trim();
   const bet = parseInt(betInput, 10);
-  const user = users[currentUser];
 
   if (betInput === "" || isNaN(bet)) {
     alert("賭け金を入力してください");
@@ -41,5 +41,5 @@ function rollDice() {
   if (user.gleam < 0) user.gleam = 0;
   saveUsers();
   updateMetrics();
-  document.getElementById("dice-result").innerHTML = result;
+  document.getElementById("tintiro-result").innerHTML = result;
 }
