@@ -1,4 +1,4 @@
-<!DOCTYPE html>   <!--すまんサムさんワイこのプログラム大まかな構成順とカジノの部分の中身何書いてるかしか知らないから変更するなら勝手にしてクレメンス-->
+<!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
@@ -67,7 +67,130 @@
       <button onclick="toggleGame()">終了</button>
     </div>
   </div>
-
+  <script>
+    //===== set indexedDB functions (like LocalStorage) ====
+    const DB_NAME = "Gleam";
+    const STORE_NAME = "GleamFireStore";
+    function openDB() {
+        return new Promise((resolve, reject) => {
+            const request = indexedDB.open(DB_NAME, 1);
+            request.onerror = (event) => reject("DB open error");
+            request.onsuccess = (event) => resolve(event.target.result);
+            request.onupgradeneeded = (event) => {
+                const db = event.target.result;
+                if (!db.objectStoreNames.contains(STORE_NAME)) {
+                    db.createObjectStore(STORE_NAME);
+                };
+            };
+        });
+    }
+    async function setItem(key, value) {
+        const db = await openDB();
+        const tx = db.transaction(STORE_NAME, "readwrite");
+        const store = tx.objectStore(STORE_NAME);
+        store.put(value, key);
+        return tx.complete;
+    }
+    async function getItem(key) {
+        const db = await openDB();
+        const tx = db.transaction(STORE_NAME, "readonly");
+        const store = tx.objectStore(STORE_NAME);
+        return new Promise((resolve, reject) => {
+            const request = store.get(key);
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => reject("Get error");
+        });
+    }
+    
+    
+    let currentUser = 'guest';
+    let users = JSON.parse(getItem("users") || "{}");
+    
+    // 初回のみ5000 Gleamを設定
+    if (!users['guest']) {
+      users['guest'] = { password: '', gleam: 5000, debt: 0 };
+      saveUsers();
+    }
+    
+    function saveUsers() {
+      setItem("users", JSON.stringify(users));
+    }
+    
+    function login() {
+      const u = document.getElementById("username").value;
+      const p = document.getElementById("password").value;
+      if (users[u] && users[u].password === p) {
+        currentUser = u;
+        alert("ログイン完了");
+        showMain();
+      } else {
+        alert("ログイン失敗");
+      }
+    }
+    
+    function register() {
+      const u = document.getElementById("username").value;
+      const p = document.getElementById("password").value;
+      if (!users[u]) {
+        users[u] = { password: p, gleam: 5000, debt: 0 };
+        saveUsers();
+        currentUser = u;
+        alert("登録完了");
+        showMain();
+      } else {
+        alert("そのユーザーは既に存在します");
+      } 
+    }
+    
+    function showMain() {
+      document.getElementById("login-area").style.display = "none";
+      document.getElementById("main-area").style.display = "block";
+      document.getElementById("welcome-text").textContent = `ようこそ、${currentUser}さん`;
+      updateMetrics();
+    }
+    
+    function updateMetrics() {
+      document.getElementById("gleam").textContent = users[currentUser].gleam;
+      document.getElementById("debt").textContent = users[currentUser].debt;
+    }
+    
+    function borrow() {
+      const val = parseInt(document.getElementById("amount").value);
+      if (val > 0) {
+        users[currentUser].gleam += val;
+        users[currentUser].debt += Math.ceil(val * 1.01);
+        saveUsers();
+        updateMetrics();
+      }
+    }
+    
+    function repay() {
+      const val = parseInt(document.getElementById("amount").value, 10);
+      const user = users[currentUser];
+      const repayAmount = Math.min(val, user.debt, user.gleam);
+      if (repayAmount > 0) {
+        user.gleam -= repayAmount;
+        user.debt -= repayAmount;
+        saveUsers();
+        updateMetrics();
+      }
+    }
+    
+    function toggleGame() {
+      const gameArea = document.getElementById("game-area");
+      const startGameBtn = document.getElementById("start-game-btn");
+      
+      // ゲームエリアが表示されていなければ表示、表示されていれば非表示
+      gameArea.classList.toggle("hidden");
+      startGameBtn.style.display = gameArea.classList.contains("hidden") ? "block" : "none";
+    
+      // サイコロを振るボタンもゲームエリア内で非表示に
+      if (gameArea.classList.contains("hidden")) {
+        document.getElementById("bet").value = ""; // ベット額リセット
+        document.getElementById("dice-result").textContent = ""; // 出目のリセット
+      }
+    }
+  </script>
   <script src="/-/scripts/tintiro.js"></script>
 </body>
 </html>
