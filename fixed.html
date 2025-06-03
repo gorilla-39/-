@@ -1,0 +1,73 @@
+<!DOCTYPE html>   <!--すまんサムさんワイこのプログラム大まかな構成順とカジノの部分の中身何書いてるかしか知らないから変更するなら勝手にしてクレメンス-->
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>Gleam チンチロリン</title>
+  <style>
+    body { 
+      font-family: Arial; 
+      padding: 20px; 
+      max-width: 700px; 
+      margin: auto; 
+      background-color: #111;
+      color: white;
+    }
+    h1, h2, h3 { 
+      color: #FFFFFF;
+    }
+    h2 { margin-top: 30px; }
+    .hidden { display: none; }
+    input, button { 
+      padding: 6px; 
+      margin: 5px 0; 
+      width: 100%; 
+      background-color: #222; 
+      border: 1px solid #444;
+      color: white;
+    }
+    button:hover { background-color: #333; }
+    .metrics { margin: 10px 0; font-weight: bold; }
+    #game-area {
+      background-color: #333;
+      padding: 20px;
+      border-radius: 8px;
+    }
+    #dice-result { color: #FFD700; }
+  </style>r
+</head>
+<body>
+  <h1>Gleam チンチロリン</h1>
+
+  <!-- ログイン画面 -->
+  <div id="login-area">
+    <h2>ログイン</h2>
+    <input id="username" placeholder="ユーザー名">
+    <input id="password" type="password" placeholder="パスワード">
+    <button onclick="login()">ログイン</button>
+    <button onclick="register()">新規登録</button>
+  </div>
+
+  <!-- メインエリア -->
+  <div id="main-area" class="hidden">
+    <h2 id="welcome-text"></h2>
+    <div class="metrics">💰 Gleam: <span id="gleam">0</span></div>
+    <div class="metrics">借金: <span id="debt">0</span></div>
+
+    <h3>💼 取引所</h3>
+    <input id="amount" type="number" placeholder="金額を入力">
+    <button onclick="borrow()">借りる</button>
+    <button onclick="repay()">返済する</button>
+
+    <h3>🎲 チンチロリン</h3>
+    <button id="start-game-btn" onclick="toggleGame()">チンチロリンで遊ぶ</button>
+    <div id="game-area" class="hidden">
+      <input id="bet" type="number" placeholder="掛け金 (Gleam)">
+      <button onclick="rollDice()">サイコロを振る</button>
+      <div id="dice-result"></div>
+      <button onclick="toggleGame()">終了</button>
+    </div>
+  </div>
+
+  <script src="/-/scripts/tintiro.js"></script>
+</body>
+</html>
