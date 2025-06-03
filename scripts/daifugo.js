@@ -1,4 +1,4 @@
-// daifugo_full.js – フル機能版 大富豪（ローカルルール＋資産＋交換＋賭け金）
+//大富豪（ローカルルール＋資産＋交換＋賭け金）　まだ基礎中の基礎しか作れてないっピ
 
 let players = [];
 let currentTurnIndex = 0;
