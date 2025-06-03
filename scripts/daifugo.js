@@ -139,7 +139,7 @@ function playSelectedCards() {
 
   if (played.length >= 4 && allSameRank(played)) {
     isRevolution = !isRevolution;
-    alert("革命発動！強さが逆転しました");
+    alert("革命！ﾃﾞｪｪｪｪｪﾝ！！！！！！");
   }
 
   currentPlayer.hand = currentPlayer.hand.filter((_, i) => !selectedCards.includes(i));
