@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>Gleam チンチロリン</title>
+  <title>Gleam Games</title>
   <style>
     body { 
       font-family: Arial; 
@@ -104,7 +104,7 @@
 
     //currentUserをguest（匿名）にしといて、
     let currentUser = 'guest';
-    let users = JSON.parse(getItem("users") || "{}");
+    let users = getItem("users").then(content => JSON.parse(content || "{}"));
     
     // 初回のみ5000 Gleamを設定
     if (!users['guest']) {
