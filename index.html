@@ -70,7 +70,7 @@
 
   <script>
     let currentUser = 'guest';
-    let users = JSON.parse(localStorage.getItem("users") || "{}");
+    let users = JSON.parse(localStorage.getItem("users") || "{}");// FIMXE: localStorageにユーザ情報保存すんな。書き換えんぞ。
 
     // 初回のみ5000 Gleamを設定
     if (!users['guest']) {
@@ -79,7 +79,7 @@
     }
 
     function saveUsers() {
-      localStorage.setItem("users", JSON.stringify(users));
+      localStorage.setItem("users", JSON.stringify(users)); //FIXME: 代わりにindexedDB使え
     }
 
     function login() {
@@ -131,7 +131,7 @@
     }
 
     function repay() {
-      const val = parseInt(document.getElementById("amount").value);
+      const val = parseInt(document.getElementById("amount").value); //TODO: 第二引数に基数指定しろ
       const user = users[currentUser];
       const repayAmount = Math.min(val, user.debt, user.gleam);
       if (repayAmount > 0) {
@@ -159,7 +159,7 @@
 
     function rollDice() {
       const betInput = document.getElementById("bet").value.trim();
-      const bet = parseInt(betInput);
+      const bet = parseInt(betInput); //TODO: ここも基数指定しろ
       const user = users[currentUser];
 
       if (betInput === "" || isNaN(bet)) {
@@ -177,6 +177,7 @@
       const sorted = [...dice].sort();
       let payout = 0;
 
+      //個人的にはここは別関数にして「どんな出目か」とかを返してもらった上でswith-caseでやったほうが綺麗な気がする
       if (dice[0] === dice[1] && dice[1] === dice[2]) {
         payout = dice[0] === 1 ? bet * 6 : bet * 4; // ピンゾロ5倍、ゾロ目3倍
         result += dice[0] === 1 ? "ピンゾロ！5倍！" : "ゾロ目！3倍！";
@@ -188,7 +189,7 @@
         result += "シゴロ！2倍！";
       } else if (new Set(dice).size === 2) {
         payout = bet*2; // ワンペア等倍
-        result += "ワンペア！1倍！";
+6        result += "ワンペア！1倍！";
       } else {
         payout = 0; // 目無し0倍
         result += "ノミ（バラバラ）！マイナス1倍！";
