@@ -94,9 +94,11 @@
         <button id="blackjack-btn" class="buttons" onclick="toggleGame('blackjack')">ブラックジャックで遊ぶ</button>
         <div id="blackjack-area" class="hidden">
             <input id="blackjack-bet" class="inputs" type="number" placeholder="掛け金 (Gleam)">
-            <div style="text-align: center">
-                <button id="start-draw-button" class="half_buttons" onclick="drawCard()">開始</button>
-                <button class="half_buttons" onclick="check()">決定</button>
+            <div style="text-align:center">
+              <button id="start-button"  class="half_buttons" onclick="startGame()">開始</button>
+              <button id="hit-button"    class="half_buttons hidden" onclick="hit()">ヒット</button>
+              <button id="stand-button"  class="half_buttons hidden" onclick="stand()">スタンド</button>
+              <button id="double-button" class="half_buttons hidden" onclick="doubleDown()">ダブルアップ</button>
             </div>
             <div id="blackjack-result"></div>
             <button class="buttons" onclick="toggleGame('blackjack')">終了</button>
@@ -228,7 +230,8 @@
       if (!loadedScriptGames.includes(GameName)) {
         loadedScriptGames.push(GameName);
         let GameScript = document.createElement("script");
-        GameScript.src = `/-/scripts/${GameName}.js`;
+        //GameScript.src = `/-/scripts/${GameName}.js`;
+        GameScript.src = `/scripts/${GameName}.js`;
         document.body.appendChild(GameScript);
       }
     }
