@@ -20,6 +20,7 @@ function rollDice() {
   let payout = 0;
 
   //個人的にはここは別関数にして「どんな出目か」とかを返してもらった上でswith-caseでやったほうが綺麗な気がする
+  //賛成でごわす
   if (dice[0] === dice[1] && dice[1] === dice[2]) {
     payout = dice[0] === 1 ? bet * 6 : bet * 4; // ピンゾロ5倍、ゾロ目3倍
     result += dice[0] === 1 ? "ピンゾロ！5倍！" : "ゾロ目！3倍！";
@@ -36,7 +37,7 @@ function rollDice() {
     payout = 0; // 目無し0倍
     result += "ノミ（バラバラ）！マイナス1倍！";
   }
-
+  users[currentUser].debt += Math.ceil(val * 1.01);
   user.gleam += payout - bet;
   if (user.gleam < 0) user.gleam = 0;
   saveUsers();
