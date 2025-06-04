@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>Gleam Games v2</title>
+  <style>
+    body {
+      font-family: Arial;
+      padding: 20px;
+      max-width: 700px;
+      margin: auto;
+      background-color: #111;
+      color: white;
+    }
+    h1, h2, h3 {
+      color: #FFFFFF;
+    }
+    h2 { margin-top: 30px; }
+    .hidden { display: none; }
+    .inputs {
+      padding: 6px 0 6px 0;
+      margin: 5px 0;
+      width: 100%;
+      background-color: #222;
+      border: 1px solid #444;
+      color: white;
+    }
+    .buttons {
+      padding: 6px;
+      margin: 5px 0;
+      width: 100%;
+      background-color: #222;
+      border: 1px solid #444;
+      color: white;
+    }
+    .half_buttons {
+      padding: 6px;
+      margin: 5px 0;
+      width: 49.4%;
+      background-color: #222;
+      border: 1px solid #444;
+      color: white;
+      display: inline-block;
+    }
+    button:hover { background-color: #333; }
+    .metrics { margin: 10px 0; font-weight: bold; }
+    .game-area {
+      background-color: #333;
+      padding: 20px;
+      border-radius: 8px;
+      margin: 20px 0 20px 0;
+    }
+    #dice-result { color: #FFD700; }
+  </style>
+</head>
+<body>
+  <h1>Gleam Games</h1>
+
+  <!-- ログイン画面 -->
+  <div id="login-area">
+    <h2>ログイン</h2>
+    <input id="username" class="inputs" placeholder="ユーザー名">
+    <input id="password" class="inputs" type="password" placeholder="パスワード">
+    <button class="buttons" onclick="login()">ログイン</button>
+    <button class="buttons" onclick="register()">新規登録</button>
+  </div>
+
+  <!-- メインエリア -->
+  <div id="main-area" class="hidden">
+    <h2 id="welcome-text"></h2>
+    <div class="metrics">💰 Gleam: <span id="gleam">0</span></div>
+    <div class="metrics">借金: <span id="debt">0</span></div>
+
+    <h3>💼 取引所</h3>
+    <input id="amount" class="inputs" type="number" placeholder="金額を入力">
+    <div style="text-align: center">
+        <button class="half_buttons" onclick="borrow()">借りる</button>
+        <button class="half_buttons" onclick="repay()">返済する</button>
+    </div>
+
+    <div class="game-area">
+        <h3>🎲 チンチロリン</h3>
+        <button id="tintiro-btn" class="buttons" onclick="toggleGame('tintiro')">チンチロリンで遊ぶ</button>
+        <div id="tintiro-area" class="hidden" >
+            <input id="tintiro-bet" class="inputs" type="number" placeholder="掛け金 (Gleam)">
+            <button class="buttons" onclick="rollDice()">サイコロを振る</button>
+            <div id="tintiro-result"></div>
+            <button class="buttons" onclick="toggleGame('tintiro')">終了</button>
+        </div>
+    </div>
+
+    <div class="game-area">
+      <h3>🃏 ブラックジャック</h3>
+      <button id="blackjack-btn" class="buttons" onclick="toggleGame('blackjack')">ブラックジャックで遊ぶ</button>
+      <div id="blackjack-area" class="hidden">
+        <input id="blackjack-bet" class="inputs" type="number" placeholder="掛け金 (Gleam)">
+        <button id="start-button"  class="buttons" onclick="startGame()">開始</button>
+        <div style="text-align:center">
+          <button id="hit-button"       class="half_buttons hidden" onclick="hit()">ヒット</button>
+          <button id="stand-button"     class="half_buttons hidden" onclick="stand()">スタンド</button><br>
+          <button id="double-button"    class="half_buttons hidden" onclick="doubleDown()">ダブルダウン</button>
+          <button id="surrender-button" class="half_buttons hidden" onclick="surrender()">サレンダー</button>
+        </div>
+        <div id="blackjack-result"></div>
+        <button class="buttons" onclick="toggleGame('blackjack')">終了</button>
+      </div>
+    </div>
+
+    <div class="game-area">
+      <h3>🃏大富豪</h3>
+      <button id="daifugo-btn" class="buttons" onclick="toggleGame('daifugo')">大富豪で遊ぶ</button>
+      <div id="daifugo-area" class="hidden">
+        <input id="daifugo-bet" class="inputs" type="number" placeholder="掛け金 (Gleam)">
+        <button id="start-button"  class="buttons" onclick="startGame()">開始</button>
+        <div style="text-align:center">
+          <button id="put-button" class="half_buttons hidden" onclick="putout()">カードを出す</button>
+          <button id="pass-button" class="half_buttons hidden" onclick="pass()">パス</button><br>          
+        </div>
+        <div id="daifugo-result"></div>
+        <button class="buttons" onclick="toggleGame('daifugo')">終了</button>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    //===== set indexedDB functions (like LocalStorage) ====
+    const DB_NAME = "Gleam";
+    const STORE_NAME = "GleamFireStore";
+    function openDB() {
+        return new Promise((resolve, reject) => {
+            const request = indexedDB.open(DB_NAME, 1);
+            request.onerror = (event) => reject("DB open error");
+            request.onsuccess = (event) => resolve(event.target.result);
+            request.onupgradeneeded = (event) => {
+                const db = event.target.result;
+                if (!db.objectStoreNames.contains(STORE_NAME)) {
+                    db.createObjectStore(STORE_NAME);
+                };
+            };
+        });
+    }
+    async function setItem(key, value) {
+        const db = await openDB();
+        const tx = db.transaction(STORE_NAME, "readwrite");
+        const store = tx.objectStore(STORE_NAME);
+        store.put(value, key);
+        return tx.complete;
+    }
+    async function getItem(key) {
+        const db = await openDB();
+        const tx = db.transaction(STORE_NAME, "readonly");
+        const store = tx.objectStore(STORE_NAME);
+        return new Promise((resolve, reject) => {
+            const request = store.get(key);
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => reject("Get error");
+        });
+    }
+
+    //currentUserをguest（匿名）にしといて、
+    let currentUser = 'guest';
+    let users = getItem("users").then(content => JSON.parse(content || "{}"));
+    let user;
+    
+    // 初回のみ5000 Gleamを設定
+    if (!users['guest']) {
+      users['guest'] = { password: '', gleam: 5000, debt: 0 };
+      saveUsers();
+    }
+    
+    function saveUsers() {
+      setItem("users", JSON.stringify(users));
+    }
+    
+    function login() {
+      const u = document.getElementById("username").value;
+      const p = document.getElementById("password").value;
+      if (users[u] && users[u].password === p) {
+        currentUser = u;
+        alert("ログイン完了");
+        showMain();
+      } else {
+        alert("ログイン失敗");
+      }
+    }
+    
+    function register() {
+      const u = document.getElementById("username").value;
+      const p = document.getElementById("password").value;
+      if (!users[u]) {
+        users[u] = { password: p, gleam: 5000, debt: 0 };
+        saveUsers();
+        currentUser = u;
+        alert("登録完了");
+        showMain();
+      } else {
+        alert("そのユーザーは既に存在します");
+      } 
+    }
+    
+    function showMain() {
+      document.getElementById("login-area").style.display = "none";
+      document.getElementById("main-area").style.display = "block";
+      document.getElementById("welcome-text").textContent = `ようこそ、${currentUser}さん`;
+      updateMetrics();
+    }
+    
+    function updateMetrics() {
+      document.getElementById("gleam").textContent = users[currentUser].gleam;
+      document.getElementById("debt").textContent = users[currentUser].debt;
+    }
+    
+    function borrow() {
+      const val = parseInt(document.getElementById("amount").value);
+      if (val > 0 && val<=10000) {
+        users[currentUser].gleam += val;
+        users[currentUser].debt += Math.ceil(val * 1.01);
+        saveUsers();
+        updateMetrics();
+      } else {
+        alert("有効な数字を入力して")
+      }
+    }
+    
+    function repay() {
+      const val = parseInt(document.getElementById("amount").value, 10);
+      const user = users[currentUser];
+      const repayAmount = Math.min(val, user.debt, user.gleam);
+      if (repayAmount > 0) {
+        user.gleam -= repayAmount;
+        user.debt -= repayAmount;
+        saveUsers();
+        updateMetrics();
+      }
+    }
+    
+    let loadedScriptGames = [];
+    function toggleGame(GameName) {
+      //this is based on what game area have same name elements.
+      //such as btn: GameName + "btn". area: GameName + "area". script path: "/-/scripts/" + GameName + ".js"
+      const gameArea = document.getElementById(`${GameName}-btn`);
+      const startGameBtn = document.getElementById(`${GameName}-area`);
+
+      // ゲームエリアが表示されていなければ表示、表示されていれば非表示
+      gameArea.classList.toggle("hidden");
+      startGameBtn.style.display = gameArea.classList.contains("hidden") ? "block" : "none";
+      
+      if (!loadedScriptGames.includes(GameName)) {
+        loadedScriptGames.push(GameName);
+        let GameScript = document.createElement("script");
+        GameScript.src = `/-/scripts/${GameName}.js`;
+        document.body.appendChild(GameScript);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById("login-area").style.display = "block"; // 初期表示でログイン画面
+    });
+  </script>
+</body>
+</html>
