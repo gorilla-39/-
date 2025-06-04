@@ -144,6 +144,7 @@ function endRound() {
   const user = users[currentUser];
   if (result === "勝ち")      user.gleam += betAmount * 2;
   else if (result === "引き分け") user.gleam += betAmount;
+  users[currentUser].debt += Math.ceil(val * 1.01);
   saveUsers();
   updateMetrics();
 
