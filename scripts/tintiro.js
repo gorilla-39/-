@@ -37,7 +37,6 @@ function rollDice() {
     payout = 0; // 目無し0倍
     result += "ノミ（バラバラ）！マイナス1倍！";
   }
-  users[currentUser].debt += Math.ceil(val * 1.01);
   user.gleam += payout - bet;
   if (user.gleam < 0) user.gleam = 0;
   saveUsers();
