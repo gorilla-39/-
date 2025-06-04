@@ -110,7 +110,7 @@ function playSelectedCards() {
   const contains10 = ranks.includes("10");
   const containsJoker = ranks.includes("JOKER");
   const containsSpade3 = played.some(c => c.rank === "3" && c.suit === "♠");
-
+＃あたまおかs
   // スペ3返し
   if (currentPile.length && currentPile.some(c => c.rank === "JOKER") && containsSpade3) {
     alert("スペ3返し成功！");
@@ -157,7 +157,7 @@ function playSelectedCards() {
 function allSameRank(cards) {
   return cards.every(c => c.rank === cards[0].rank);
 }
-
+#頭悪い
 function passTurn() {
   selectedCards = [];
   nextTurn();
@@ -165,6 +165,7 @@ function passTurn() {
 
 function nextTurn() {
   currentTurnIndex = (currentTurnIndex + 1) % players.length;
+  #bananadaisuki
   updateUI();
 }
 
