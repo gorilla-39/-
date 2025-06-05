@@ -108,22 +108,43 @@
 
 
     
-  <!--とりまコピペでいじったが何故かブラックジャックが消えたから多分どっか2つあっちゃいけない物が2つあるわ。 後、scriptの方にチャッピーに基礎だけ作らせた物あるけどfanctionまみれで読めんかったからdaifugo.jsいじるのは頼んだ。-->
-  <div class="game-area">
-      <h3>🃏大富豪(内部処理まだ)</h3>
-      <button id="daifugo-btn" class="buttons" onclick="toggleGame('daifugo')">大富豪で遊ぶ</button>
-      <div id="daifugo-area" class="hidden">
-        <input id="daifugo-bet" class="inputs" type="number" placeholder="掛け金 (Gleam)">
-        <button id="start-button"  class="buttons" onclick="startGame()">開始</button>
-        <div style="text-align:center">
-          <button id="put-button" class="half_buttons hidden" onclick="putout()">カードを出す</button>
-          <button id="pass-button" class="half_buttons hidden" onclick="pass()">パス</button><br>          
-        </div>
-        <div id="daifugo-result"></div>
-        <button class="buttons" onclick="toggleGame('daifugo')">終了</button>
-      </div>
+ <div class="game-area">
+  <h3>🃏 大富豪</h3>
+
+  <!-- ゲーム選択ボタン -->
+  <div id="daifugo-mode-select">
+    <button class="half_buttons" onclick="setDaifugoMode('player')">プレイヤー対戦</button>
+    <button class="half_buttons" onclick="setDaifugoMode('cpu')">CPU対戦</button>
+  </div>
+
+  <!-- メインゲームエリア -->
+  <div id="daifugo-area" class="hidden">
+    
+    <!-- 賭け金の入力とゲーム開始 -->
+    <input id="daifugo-bet" class="inputs" type="number" placeholder="掛け金 (Gleam)">
+    <button id="start-button" class="buttons" onclick="startGame()">開始</button>
+
+    <!-- 操作ボタン -->
+    <div style="text-align:center">
+      <button id="put-button" class="half_buttons hidden" onclick="putout()">カードを出す</button>
+      <button id="pass-button" class="half_buttons hidden" onclick="pass()">パス</button><br>
     </div>
-  </div>      
+
+    <!-- 手札表示エリア -->
+    <div id="player-hand" style="margin: 10px 0; display: flex; flex-wrap: wrap; gap: 5px;"></div>
+
+    <!-- 状態表示 -->
+    <div id="turn-indicator" style="margin-top: 10px;"></div>
+    <div id="gleam-info" style="margin-bottom: 10px;"></div>
+
+    <!-- 結果表示 -->
+    <div id="daifugo-result"></div>
+
+    <!-- 終了ボタン -->
+    <button class="buttons" onclick="toggleGame('daifugo')">終了</button>
+  </div>
+</div>
+
   
   <script>
     //===== set indexedDB functions (like LocalStorage) ====
