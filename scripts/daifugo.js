@@ -1,185 +1,202 @@
-//大富豪（ローカルルール＋資産＋交換＋賭け金）　まだ基礎中の基礎しか作れてないっピ
-
 let players = [];
 let currentTurnIndex = 0;
-let previousRanks = {};
 let selectedCards = [];
 let currentPile = [];
 let isRevolution = false;
-let currentBet = 100; // 1ラウンドの賭け金（初期値）
+let currentBet = 100;
+let Q_table = {};
+let cpuMemory = [[], [], []]; // 各CPUの記録
 
 const rankStrength = ['3','4','5','6','7','8','9','10','J','Q','K','A','2','JOKER'];
+const CPU_NAMES = ["CPU_1", "CPU_2", "CPU_3"];
+let isCPUmode = true;
 
 class Player {
-  constructor(name, gleam = 5000, debt = 0) {
+  constructor(name, isCPU = false) {
     this.name = name;
-    this.gleam = gleam;
-    this.debt = debt;
+    this.gleam = 5000;
+    this.debt = 0;
     this.hand = [];
     this.rank = null;
+    this.isCPU = isCPU;
   }
 }
 
-function initGame(playerNames) {
-  players = playerNames.map(n => new Player(n));
-  if (!validateGleamBet()) return;
+function startGame() {
+  isCPUmode = confirm("CPU戦を開始しますか？（OKでCPU戦、キャンセルでプレイヤー戦）");
+  const names = isCPUmode ? ["You", ...CPU_NAMES] : prompt("名前をカンマ区切りで").split(",");
+  players = names.map((n, i) => new Player(n.trim(), isCPUmode && i > 0));
+
+  if (!players.every(p => p.gleam >= currentBet)) {
+    alert("Gleam不足");
+    return;
+  }
   players.forEach(p => p.gleam -= currentBet);
   dealCards();
-  determineFirstPlayer();
-  exchangeCards();
+  currentTurnIndex = 0;
   updateUI();
-}
-
-function validateGleamBet() {
-  const minGleam = Math.min(...players.map(p => p.gleam));
-  if (minGleam < currentBet) {
-    alert("所持Gleamが不足しているプレイヤーがいます");
-    return false;
-  }
-  return true;
+  if (players[currentTurnIndex].isCPU) setTimeout(cpuTurn, 500);
 }
 
 function dealCards() {
   const suits = ['♠','♥','♦','♣'];
   const ranks = ['3','4','5','6','7','8','9','10','J','Q','K','A','2'];
-  let deck = [];
-  suits.forEach(s => ranks.forEach(r => deck.push({ suit: s, rank: r })));
-  deck.push({ suit: '', rank: 'JOKER' }, { suit: '', rank: 'JOKER' });
-  for (let i = deck.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [deck[i], deck[j]] = [deck[j], deck[i]];
-  }
-  while (deck.length) {
-    for (let p of players) {
-      if (!deck.length) break;
-      p.hand.push(deck.pop());
-    }
-  }
-}
-
-function determineFirstPlayer() {
-  if (Object.keys(previousRanks).length === 0) {
-    currentTurnIndex = Math.floor(Math.random() * players.length);
-  } else {
-    const startPlayer = players.findIndex(p => previousRanks[p.name] === "貧民");
-    currentTurnIndex = startPlayer >= 0 ? startPlayer : 0;
-  }
-}
-
-function exchangeCards() {
-  // 仮：手札ソートし強カードを大富豪へ、大貧民へは弱カード
-  const sortedPlayers = [...players].sort((a, b) => b.gleam - a.gleam);
-  const rich = sortedPlayers[0], poor = sortedPlayers[sortedPlayers.length - 1];
-  rich.hand.push(...poor.hand.splice(0, 2)); // poorから2枚
-  poor.hand.push(...rich.hand.splice(-2));   // richから2枚
+  let deck = suits.flatMap(s => ranks.map(r => ({ suit: s, rank: r })));
+  deck.push({ rank: 'JOKER', suit: '' }, { rank: 'JOKER', suit: '' });
+  deck.sort(() => Math.random() - 0.5);
+  while (deck.length) players.forEach(p => deck.length && p.hand.push(deck.pop()));
 }
 
 function updateUI() {
-  const handDiv = document.getElementById('player-hand');
-  handDiv.innerHTML = '';
-  const currentPlayer = players[currentTurnIndex];
-  currentPlayer.hand.forEach((card, idx) => {
-    const div = document.createElement('div');
-    div.className = 'card';
-    div.textContent = card.suit + card.rank;
-    div.onclick = () => {
-      div.classList.toggle('selected');
-      if (selectedCards.includes(idx)) {
-        selectedCards = selectedCards.filter(i => i !== idx);
-      } else {
-        selectedCards.push(idx);
-      }
-    };
-    handDiv.appendChild(div);
-  });
-  document.getElementById('turn-indicator').textContent = `現在の手番: ${currentPlayer.name}`;
-  document.getElementById('gleam-info').textContent = `Gleam: ${currentPlayer.gleam}`;
+  const div = document.getElementById('daifugo-result');
+  div.innerHTML = `<p>手番: ${players[currentTurnIndex].name}</p>`;
+  const handDiv = document.getElementById("player-hand");
+  if (!players[currentTurnIndex].isCPU) {
+    handDiv.innerHTML = players[currentTurnIndex].hand.map((c, i) =>
+      `<button onclick="toggleCard(${i})">${c.suit}${c.rank}</button>`
+    ).join("");
+  } else {
+    handDiv.innerHTML = "<p>CPUのターン...</p>";
+  }
 }
 
-function playSelectedCards() {
-  const currentPlayer = players[currentTurnIndex];
-  if (selectedCards.length === 0) {
-    alert("カードを選択してください");
-    return;
-  }
+function toggleCard(i) {
+  if (selectedCards.includes(i)) selectedCards = selectedCards.filter(x => x !== i);
+  else selectedCards.push(i);
+}
 
-  const played = selectedCards.map(i => currentPlayer.hand[i]);
-  const ranks = played.map(c => c.rank);
-  const contains8 = ranks.includes("8");
-  const contains5 = ranks.includes("5");
-  const contains10 = ranks.includes("10");
-  const containsJoker = ranks.includes("JOKER");
-  const containsSpade3 = played.some(c => c.rank === "3" && c.suit === "♠");
-＃あたまおかs
-  // スペ3返し
-  if (currentPile.length && currentPile.some(c => c.rank === "JOKER") && containsSpade3) {
-    alert("スペ3返し成功！");
-    currentPile = played;
-  } else {
-    // 出せるかの判定（略）→仮にOKとする
-    currentPile = played;
-  }
-
-  // 特殊ルール
-  if (contains8) {
-    alert("8切り発動！場を流します");
-    currentPile = [];
-  }
-  if (contains5) {
-    alert("5スキップ！次の1人を飛ばします");
-    currentTurnIndex = (currentTurnIndex + 1) % players.length;
-  }
-  if (contains10) {
-    alert("10捨て！追加で1枚捨ててください");
-    currentPlayer.hand = currentPlayer.hand.filter((_, i) => !selectedCards.includes(i));
-    selectedCards = [];
-    updateUI();
-    return; // 捨て処理後に改めて再アクション
-  }
-
-  if (played.length >= 4 && allSameRank(played)) {
-    isRevolution = !isRevolution;
-    alert("革命！ﾃﾞｪｪｪｪｪﾝ！！！！！！");
-  }
-
-  currentPlayer.hand = currentPlayer.hand.filter((_, i) => !selectedCards.includes(i));
+function putout() {
+  const p = players[currentTurnIndex];
+  const cards = selectedCards.map(i => p.hand[i]);
+  if (!canPlay(cards)) return alert("出せません");
+  currentPile = cards;
+  p.hand = p.hand.filter((_, i) => !selectedCards.includes(i));
   selectedCards = [];
-
-  if (currentPlayer.hand.length === 0) {
-    alert(`${currentPlayer.name} が上がりました！`);
-    assignGleamRewards(currentPlayer);
-    return;
-  }
-
+  checkWin(p);
   nextTurn();
 }
 
-function allSameRank(cards) {
-  return cards.every(c => c.rank === cards[0].rank);
-}
-#頭悪い
-function passTurn() {
+function pass() {
   selectedCards = [];
   nextTurn();
 }
 
 function nextTurn() {
   currentTurnIndex = (currentTurnIndex + 1) % players.length;
-  #bananadaisuki
   updateUI();
+  const p = players[currentTurnIndex];
+  if (p.isCPU) setTimeout(cpuTurn, 700);
 }
 
-function assignGleamRewards(winner) {
-  const pot = currentBet * players.length;
-  const weights = [0.5, 0.3, 0.1, 0.05, 0.05];
-  const sorted = [...players].sort((a, b) => b.hand.length - a.hand.length);
-  sorted.forEach((p, i) => {
-    const gain = Math.floor(pot * (p === winner ? 0.5 : 0.05));
-    p.gleam += gain;
+function checkWin(p) {
+  if (p.hand.length === 0) {
+    alert(`${p.name} が上がりました！`);
+    const idx = players.indexOf(p);
+    const reward = idx === 0 ? 1 : idx === 1 ? 0.5 : -0.2;
+    cpuMemory.forEach((mem, i) =>
+      mem.forEach(({s,a,n}) => updateQ(s, a, reward, n))
+    );
+    Q_save();
+  }
+}
+
+function cpuTurn() {
+  const cpu = players[currentTurnIndex];
+  const cpuIndex = CPU_NAMES.indexOf(cpu.name);
+  const state = getState(cpu);
+  const actions = getLegalActions(cpu);
+  const action = chooseAction(state, actions);
+  const nextHand = applyAction(cpu, action);
+  const nextState = getState(cpu);
+
+  cpuMemory[cpuIndex].push({ s: state, a: action, n: nextState });
+
+  currentPile = action === "PASS" ? currentPile : nextHand;
+  cpu.hand = cpu.hand.filter(c => !nextHand.includes(c));
+  checkWin(cpu);
+  nextTurn();
+}
+
+function getState(p) {
+  const counts = Array(15).fill(0);
+  p.hand.forEach(c => {
+    let i = rankStrength.indexOf(c.rank);
+    if (c.rank === "3" && c.suit === "♠") i = 14;
+    counts[i]++;
   });
-  updateUI();
+  return JSON.stringify({
+    r: counts,
+    h: p.hand.length,
+    rev: isRevolution,
+    top: currentPile.length ? rankStrength.indexOf(currentPile[0].rank) : -1,
+    cnt: currentPile.length
+  });
 }
 
-window.initGame = initGame;
-window.playSelectedCards = playSelectedCards;
-window.passTurn = passTurn;
+function getLegalActions(p) {
+  let groups = {};
+  p.hand.forEach(c => {
+    const key = c.rank;
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(c);
+  });
+  let actions = [];
+  for (const key in groups) {
+    const g = groups[key];
+    for (let i = 1; i <= g.length; i++) {
+      const combo = g.slice(0, i);
+      if (canPlay(combo)) actions.push(combo);
+    }
+  }
+  actions.push("PASS");
+  return actions;
+}
+
+function chooseAction(state, actions) {
+  const eps = 0.2;
+  if (Math.random() < eps) return actions[Math.floor(Math.random() * actions.length)];
+  let max = -Infinity, best = "PASS";
+  actions.forEach(a => {
+    const k = typeof a === "string" ? a : a.map(c => c.suit + c.rank).join(",");
+    const q = (Q_table[state] && Q_table[state][k]) || 0;
+    if (q > max) { max = q; best = k; }
+  });
+  return best;
+}
+
+function applyAction(p, a) {
+  if (a === "PASS") return [];
+  const cardStrs = a.split(",");
+  return p.hand.filter(c => cardStrs.includes(c.suit + c.rank));
+}
+
+function canPlay(cards) {
+  if (!cards.length) return false;
+  if (!currentPile.length) return true;
+  if (cards.length !== currentPile.length) return false;
+  const rank = cards[0].rank;
+  if (!cards.every(c => c.rank === rank)) return false;
+  const r1 = rankStrength.indexOf(cards[0].rank);
+  const r2 = rankStrength.indexOf(currentPile[0].rank);
+  return isRevolution ? r1 < r2 : r1 > r2;
+}
+
+function updateQ(s, a, r, ns) {
+  const alpha = 0.1, gamma = 0.9;
+  if (!Q_table[s]) Q_table[s] = {};
+  if (!Q_table[s][a]) Q_table[s][a] = 0;
+  const maxNext = Math.max(...Object.values(Q_table[ns] || {PASS: 0}));
+  Q_table[s][a] += alpha * (r + gamma * maxNext - Q_table[s][a]);
+}
+
+function Q_save() {
+  localStorage.setItem("Q_daifugo", JSON.stringify(Q_table));
+}
+
+function Q_load() {
+  const q = localStorage.getItem("Q_daifugo");
+  if (q) Q_table = JSON.parse(q);
+}
+
+Q_load();
+
