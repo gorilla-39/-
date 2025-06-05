@@ -83,6 +83,27 @@ button:hover {
       display: inline-block;
     }
     button:hover { background-color: #333; }
+    /* プレイヤー手札のコンテナ */
+#player-hand {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin: 10px 0;
+}
+
+/* CPUの手札枚数表示用 */
+.cpu-hand-count {
+  margin: 5px 0;
+  font-size: 0.9em;
+  color: #ddd;
+}
+
+/* ターンや状態表示の余白調整 */
+#turn-indicator, #gleam-info, #daifugo-result {
+  margin-top: 10px;
+  min-height: 24px;
+}
+
     .metrics { margin: 10px 0; font-weight: bold; }
     .game-area {
       background-color: #333;
@@ -160,12 +181,12 @@ button:hover {
 
   <!-- ゲームエリア -->
   <div id="daifugo-area" class="hidden">
-    <!-- 賭け金入力とゲーム開始 -->
-    <input id="daifugo-bet" class="inputs" type="number" placeholder="掛け金 (Gleam)">
+    <!-- 掛け金入力とゲーム開始 -->
+    <input id="daifugo-bet" class="inputs" type="number" placeholder="掛け金 (Gleam)" min="0" />
     <button id="start-button" class="buttons" onclick="startGame()">開始</button>
 
     <!-- 操作ボタン -->
-    <div style="text-align:center">
+    <div style="text-align:center; margin-top:10px;">
       <button id="put-button" class="half_buttons hidden" onclick="putout()">カードを出す</button>
       <button id="pass-button" class="half_buttons hidden" onclick="pass()">パス</button><br>
     </div>
@@ -174,16 +195,17 @@ button:hover {
     <div id="player-hand" style="margin: 10px 0; display: flex; flex-wrap: wrap; gap: 5px;"></div>
 
     <!-- 状態表示 -->
-    <div id="turn-indicator" style="margin-top: 10px;"></div>
-    <div id="gleam-info" style="margin-bottom: 10px;"></div>
+    <div id="turn-indicator" style="margin-top: 10px; font-weight:bold;"></div>
+    <div id="gleam-info" style="margin-bottom: 10px; color:#555;"></div>
 
     <!-- 結果表示 -->
-    <div id="daifugo-result"></div>
+    <div id="daifugo-result" style="white-space: pre-wrap; margin-top: 10px; font-weight: bold; color: #333;"></div>
 
     <!-- 終了ボタン -->
     <button class="buttons" onclick="toggleGame('daifugo')">終了</button>
   </div>
 </div>
+
 
 
   
