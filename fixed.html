@@ -9,6 +9,13 @@
   border: 2px solid red;
   box-sizing: border-box;
 }
+/* カードの選択状態 */
+.card.selected {
+  border: 2px solid red;
+  box-sizing: border-box;
+}
+
+/* カードの基本スタイル */
 .card {
   border: 1px solid #ccc;
   padding: 8px;
@@ -17,6 +24,25 @@
   cursor: pointer;
   border-radius: 4px;
 }
+
+/* ボタンのホバー効果 */
+button:hover {
+  background-color: #333;
+}
+
+/* ゲームエリアのスタイル */
+.game-area {
+  background-color: #333;
+  padding: 20px;
+  border-radius: 8px;
+  margin: 20px 0;
+}
+
+/* ダイス結果の色 */
+#dice-result {
+  color: #FFD700;
+}
+
 
     body {
       font-family: Arial;
@@ -122,19 +148,19 @@
 
 
     
- <div class="game-area">
+<!-- ゲームエリア -->
+<div class="game-area">
   <h3>🃏 大富豪</h3>
 
-  <!-- ゲーム選択ボタン -->
+  <!-- ゲームモード選択 -->
   <div id="daifugo-mode-select">
     <button class="half_buttons" onclick="setDaifugoMode('player')">プレイヤー対戦</button>
     <button class="half_buttons" onclick="setDaifugoMode('cpu')">CPU対戦</button>
   </div>
 
-  <!-- メインゲームエリア -->
+  <!-- ゲームエリア -->
   <div id="daifugo-area" class="hidden">
-    
-    <!-- 賭け金の入力とゲーム開始 -->
+    <!-- 賭け金入力とゲーム開始 -->
     <input id="daifugo-bet" class="inputs" type="number" placeholder="掛け金 (Gleam)">
     <button id="start-button" class="buttons" onclick="startGame()">開始</button>
 
@@ -144,7 +170,7 @@
       <button id="pass-button" class="half_buttons hidden" onclick="pass()">パス</button><br>
     </div>
 
-    <!-- 手札表示エリア -->
+    <!-- 手札表示 -->
     <div id="player-hand" style="margin: 10px 0; display: flex; flex-wrap: wrap; gap: 5px;"></div>
 
     <!-- 状態表示 -->
@@ -158,6 +184,7 @@
     <button class="buttons" onclick="toggleGame('daifugo')">終了</button>
   </div>
 </div>
+
 
   
   <script>
