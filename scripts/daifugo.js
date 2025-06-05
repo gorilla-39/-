@@ -38,6 +38,15 @@ function startGame() {
   if (players[currentTurnIndex].isCPU) setTimeout(cpuTurn, 500);
 }
 
+function setDaifugoMode(mode) {
+  // モード保存（グローバル変数でもOK）
+  window.daifugoMode = mode;
+
+  // 賭け金入力とゲームボタンを表示
+  document.getElementById("daifugo-mode-select").style.display = "none";
+  document.getElementById("daifugo-area").classList.remove("hidden");
+}
+
 function dealCards() {
   const suits = ['♠','♥','♦','♣'];
   const ranks = ['3','4','5','6','7','8','9','10','J','Q','K','A','2'];
