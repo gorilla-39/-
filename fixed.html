@@ -14,6 +14,26 @@
   border: 2px solid red;
   box-sizing: border-box;
 }
+/* プレイヤー手札のコンテナ */
+#player-hand {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin: 10px 0;
+}
+
+/* CPUの手札枚数表示用 */
+.cpu-hand-count {
+  margin: 5px 0;
+  font-size: 0.9em;
+  color: #ddd;
+}
+
+/* ターンや状態表示の余白調整 */
+#turn-indicator, #gleam-info, #daifugo-result {
+  margin-top: 10px;
+  min-height: 24px;
+}
 
 /* カードの基本スタイル */
 .card {
